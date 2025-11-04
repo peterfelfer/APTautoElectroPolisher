@@ -25,6 +25,7 @@ import time
 import sys
 import json
 import re
+import queue
 from dataclasses import dataclass
 from typing import Callable, Iterable, List, Optional, Dict, Any
 
@@ -80,6 +81,7 @@ class FluidNCClient:
 
         # Last status cache
         self._last_status: Optional[CNCStatus] = None
+        self._parser_state_queue: "queue.Queue[str]" = queue.Queue()
 
     # ------------------------- Connection management ------------------------
 
@@ -191,6 +193,17 @@ class FluidNCClient:
                     try: self.on_status(st)
                     except Exception: pass
             return
+
+        # Parser state lines typically look like "[GC:G0 G54 ...]"
+        if line.startswith("[GC:") or line.startswith("[gc:"):
+            try:
+                # Keep queue short to avoid stale buildup
+                while self._parser_state_queue.qsize() > 5:
+                    self._parser_state_queue.get_nowait()
+            except queue.Empty:
+                pass
+            self._parser_state_queue.put(line)
+            # Fall through so on_line still receives it
 
         # Messages, parser state, etc. are passed to on_line (already done)
 
@@ -345,21 +358,20 @@ class FluidNCClient:
     def home(self):
         self.send_gcode("$H", wait_ok=True)
 
-    def parser_state(self) -> str:
+    def parser_state(self, timeout: float = 1.0) -> str:
         """Send $G and return the next line that looks like parser state."""
         self.flush_input()
+        # Drop any stale parser-state replies before querying again
+        while not self._parser_state_queue.empty():
+            try:
+                self._parser_state_queue.get_nowait()
+            except queue.Empty:
+                break
         self.send_gcode("$G", wait_ok=False)
-        # Wait briefly for a response line
-        t0 = time.time()
-        while time.time() - t0 < 1.0:
-            # The reader will forward lines via on_line; we also keep last status only.
-            # For simplicity, we poll the serial buffer directly here.
-            if self.ser and self.ser.in_waiting:
-                line = self.ser.readline().decode(errors='ignore').strip()
-                if line:
-                    return line
-            time.sleep(0.01)
-        return ""
+        try:
+            return self._parser_state_queue.get(timeout=timeout)
+        except queue.Empty:
+            return ""
 
     def wait_until_idle(self, poll_hz: float = 5.0, timeout: float = 60.0) -> CNCStatus:
         """Poll status until controller reports Idle or timeout. Returns last status."""

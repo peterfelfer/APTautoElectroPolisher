@@ -1,0 +1,23 @@
+# Electropolishing process parameters (placeholders)
+
+waveform:
+  center_z_mm: 10.0            # Absolute Z position for oscillation center
+  amplitude_mm: 0.50           # Peak oscillation amplitude
+  period_s: 2.0                # Sine-wave period
+  cycles: 5                    # Number of cycles per specimen
+  sample_hz: 50                # Segment frequency for G-code approximation
+
+process:
+  max_current_a: 0.6           # Current threshold to abort or adjust polishing
+  target_voltage_v: 8.0        # Nominal polishing voltage
+  temperature_range_c: [18.0, 25.0]  # Acceptable electrolyte temperature band
+  inspection_interval_s: 60    # Time between camera inspections
+
+motion:
+  approach_speed_mm_s: 5.0     # Speed when approaching electrolyte surface
+  retract_speed_mm_s: 10.0     # Speed for retract moves
+  safe_z_mm: 30.0              # Safe clearance height
+
+cleaning:
+  nitrogen_blow_s: 5           # Duration of nitrogen drying step
+  solvent_rinse_cycles: 2      # Number of rinse repetitions

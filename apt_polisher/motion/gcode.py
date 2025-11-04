@@ -1,6 +1,7 @@
 import math
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 def make_sine_z_gcode(
@@ -76,7 +77,7 @@ def make_sine_z_gcode(
 
     # Move to initial Z on the sine
     z_prev = clamp_z(center_z + amplitude * math.sin(phi0))
-    lines.append(f"G1 X{z_prev:.{precision}f}" + (f" F{const_feed:.2f}" if not use_inverse_time else ""))
+    lines.append(f"G1 Z{z_prev:.{precision}f}" + (f" F{const_feed:.2f}" if not use_inverse_time else ""))
 
     t = 0.0
     for _ in range(1, n_steps + 1):
@@ -84,13 +85,13 @@ def make_sine_z_gcode(
         z_now = clamp_z(center_z + amplitude * math.sin(w * t + phi0))
         if use_inverse_time:
             # Inverse time: F is 1/min for THIS move; keep it constant so each segment takes dt seconds
-            lines.append(f"G1 X{z_now:.{precision}f} F{invF:.2f}")
+            lines.append(f"G1 Z{z_now:.{precision}f} F{invF:.2f}")
         else:
             # Regular feed: make the segment take ~dt seconds by setting F per segment
             dz = abs(z_now - z_prev)
             # Avoid zero/very small dz -> pick tiny move feed
             feed = const_feed if dz < 1e-6 else min(max_feed_mm_min, max(1.0, (dz / dt) * 60.0))
-            lines.append(f"G1 X{z_now:.{precision}f} F{feed:.2f}")
+            lines.append(f"G1 Z{z_now:.{precision}f} F{feed:.2f}")
         z_prev = z_now
 
     # Return controller to normal feed mode if we switched to G93
@@ -110,11 +111,14 @@ def save_ngc(gcode: str,
     """
     # Choose a default path if none provided
     if path is None:
-        os.makedirs("gcode", exist_ok=True)
+        output_dir = Path("gcode")
+        output_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        path = os.path.join("gcode", f"program_{ts}.ngc")
-    elif not path.lower().endswith(".ngc"):
-        path = f"{path}.ngc"
+        path = output_dir / f"program_{ts}.ngc"
+    else:
+        path = Path(path)
+        if path.suffix.lower() != ".ngc":
+            path = path.with_suffix(".ngc")
 
     # Normalize newlines to LF and ensure program end
     text = gcode.replace("\r\n", "\n").replace("\r", "\n").rstrip()
@@ -124,12 +128,14 @@ def save_ngc(gcode: str,
             text += "\nM2"
     text += "\n"  # final newline
 
-    if os.path.exists(path) and not overwrite:
+    if path.exists() and not overwrite:
         raise FileExistsError(f"{path} already exists; set overwrite=True to replace it.")
 
-    tmp = f"{path}.tmp"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    tmp = path.with_suffix(path.suffix + ".tmp")
     with open(tmp, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
     os.replace(tmp, path)
 
-    return os.path.abspath(path)
+    return str(path.resolve())

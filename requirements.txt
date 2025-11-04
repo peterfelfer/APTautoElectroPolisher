@@ -1,0 +1,16 @@
+# Core runtime dependencies
+pyserial>=3.5
+opencv-python>=4.8.0
+numpy>=1.24
+matplotlib>=3.7
+scikit-image>=0.21
+scipy>=1.10
+
+# GUI components (optional)
+PySide6>=6.5
+Pillow>=10.0
+
+# Developer tools (optional)
+pytest>=7.4
+pytest-cov>=4.1
+ruff>=0.1

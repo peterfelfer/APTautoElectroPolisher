@@ -1,0 +1,44 @@
+metadata:
+  description: Default time-based polishing recipe
+
+motion:
+  safe_z_mm: 40.0
+  pickup_macro: pickup_standard
+  place_macro: place_standard
+
+motion_macros:
+  pickup_standard:
+    file: motion/pickup_standard.gcode
+    description: Lower, clamp, and retract a specimen from storage.
+  place_standard:
+    file: motion/place_standard.gcode
+    description: Place specimen into storage slot.
+  clean_cycle:
+    file: motion/cleaning_cycle.gcode
+    description: Rinse and dry sequence moves.
+
+polishing:
+  waveform:
+    amplitude_mm: 0.6
+    period_s: 2.0
+    center_z_mm: -1.5
+  contact:
+    approach_speed_mm_s: 1.0
+    detection_current_ma: 5.0
+    max_depth_mm: 5.0
+  cycle:
+    mode: time
+    duration_s: 60.0
+    max_cycles: 5
+  voltage_v: 8.0
+  current_limit_a: 0.6
+
+cleaning:
+  rinse_cycles: 2
+  dry_time_s: 5.0
+  nitrogen_time_s: 4.0
+
+imaging:
+  thickness_threshold_um: 250.0
+  inspect_interval_s: 120.0
+  microscope_offset_z_mm: 0.5

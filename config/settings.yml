@@ -1,0 +1,68 @@
+# Global hardware configuration placeholders
+
+cnc:
+  port: "/dev/ttyUSB0"        # TODO: replace with actual FluidNC serial port (e.g., COM4)
+  baud: 115200
+
+power_supply:
+  host: "192.168.0.100"        # TODO: set to SCPI LAN address or remove if using serial
+  port: 5025
+  serial_port: ""              # e.g., COM6 or /dev/ttyUSB1 when using RS-232
+  baud: 9600
+
+cameras:
+  microscope: "/dev/video0"    # TODO: update to actual microscope camera device or path
+  overview: "/dev/video1"      # Optional secondary camera
+
+buffers:
+  input_slots:
+    - slot: 1
+      position: [200.0, 50.0, 10.0]     # TODO: measure actual coordinates
+    - slot: 2
+      position: [220.0, 50.0, 10.0]
+    - slot: 3
+      position: [240.0, 50.0, 10.0]
+    - slot: 4
+      position: [260.0, 50.0, 10.0]
+    - slot: 5
+      position: [280.0, 50.0, 10.0]
+  output_slots:
+    - slot: 1
+      position: [200.0, 150.0, 10.0]
+    - slot: 2
+      position: [220.0, 150.0, 10.0]
+    - slot: 3
+      position: [240.0, 150.0, 10.0]
+    - slot: 4
+      position: [260.0, 150.0, 10.0]
+    - slot: 5
+      position: [280.0, 150.0, 10.0]
+
+camera_positions:
+  # Placeholder gantry coordinates for positioning specimens under each camera
+  microscope_xyz: [150.0, 80.0, 12.0]
+  overview_xyz: [160.0, 120.0, 15.0]
+
+positions:
+  beaker_xyz: [180.0, 100.0, -5.0]
+  polishing_zero_xyz: [170.0, 90.0, 0.0]
+  safe_z_mm: 40.0
+
+sensors:
+  current:
+    device: "USB-Current-123"  # Identifier for current-sense hardware
+  temperature:
+    device: "USB-TC-001"       # Identifier for thermocouple interface
+
+calibration:
+  thickness:
+    reference_um: 500.0
+    pixels: 1200
+    scale_um_per_pixel: 0.42
+  contact:
+    approach_step_mm: 0.05
+    retract_mm: 2.0
+
+paths:
+  image_output: "data/images"  # Directory for captured frames
+  telemetry_log: "output/telemetry"

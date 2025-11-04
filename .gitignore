@@ -1,0 +1,20 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Packaging artifacts
+*.egg-info/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Project artifacts
+output/
+data/
+gcode/
