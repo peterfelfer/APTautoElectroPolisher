@@ -417,7 +417,8 @@ if __name__ == "__main__":
     def print_err(e): print(f"[ERR] {e}")
     def print_status(st: CNCStatus): print(f"[STATUS] {st.state} mpos={st.mpos} feed={st.feed}")
 
-    port = sys.argv[1] if len(sys.argv) > 1 else "/dev/ttyUSB0"
+   # port = sys.argv[1] if len(sys.argv) > 1 else "/dev/ttyUSB0"
+    port = "/dev/tty.usbserial-210"
 
     with FluidNCClient(port, baud=115200,
                        on_line=print_line,
@@ -430,6 +431,6 @@ if __name__ == "__main__":
         time.sleep(0.2)
         # Simple move (adapt to your machine safe Z)
         cnc.send_gcode("G21 G90")
-        cnc.send_gcode("G0 Z5.000")
+        cnc.send_gcode("G0 Z10.000")
         cnc.wait_until_idle(poll_hz=5, timeout=10)
         print("Done.")

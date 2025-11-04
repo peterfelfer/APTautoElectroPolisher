@@ -76,7 +76,7 @@ def make_sine_z_gcode(
 
     # Move to initial Z on the sine
     z_prev = clamp_z(center_z + amplitude * math.sin(phi0))
-    lines.append(f"G1 Z{z_prev:.{precision}f}" + (f" F{const_feed:.2f}" if not use_inverse_time else ""))
+    lines.append(f"G1 X{z_prev:.{precision}f}" + (f" F{const_feed:.2f}" if not use_inverse_time else ""))
 
     t = 0.0
     for _ in range(1, n_steps + 1):
@@ -84,13 +84,13 @@ def make_sine_z_gcode(
         z_now = clamp_z(center_z + amplitude * math.sin(w * t + phi0))
         if use_inverse_time:
             # Inverse time: F is 1/min for THIS move; keep it constant so each segment takes dt seconds
-            lines.append(f"G1 Z{z_now:.{precision}f} F{invF:.2f}")
+            lines.append(f"G1 X{z_now:.{precision}f} F{invF:.2f}")
         else:
             # Regular feed: make the segment take ~dt seconds by setting F per segment
             dz = abs(z_now - z_prev)
             # Avoid zero/very small dz -> pick tiny move feed
             feed = const_feed if dz < 1e-6 else min(max_feed_mm_min, max(1.0, (dz / dt) * 60.0))
-            lines.append(f"G1 Z{z_now:.{precision}f} F{feed:.2f}")
+            lines.append(f"G1 X{z_now:.{precision}f} F{feed:.2f}")
         z_prev = z_now
 
     # Return controller to normal feed mode if we switched to G93
